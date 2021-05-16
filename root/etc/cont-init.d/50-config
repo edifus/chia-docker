@@ -58,19 +58,34 @@ s6-setuidgid abc chia configure --upnp false
 # configure harvester settings
 if [[ ${HARVESTER_ONLY} == 'true' ]]
 then
-  if [[ -z ${FARMER_ADDRESS} || -z ${FARMER_PORT} ]]
+  if [[ ${FARMER_ONLY} == 'true' ]]
   then
-    echo "A farmer peer address and port are required."
+    echo "**** Harvester using local farmer ****"
+  elif [[ ${FARMER_ONLY} == 'false' && ( -z ${FARMER_ADDRESS} || -z ${FARMER_PORT} ) ]]
+  then
+    echo "ERROR: A farmer peer address and port are required if local farmer is not started"
     exit
   else
     s6-setuidgid abc chia configure --set-farmer-peer ${FARMER_ADDRESS}:${FARMER_PORT}
   fi
 fi
 
-# configured testnet
-if [[ ${TESTNET} == "true" ]]
+# configure farmer settings
+if [[ ${FARMER_ONLY} == 'true' && ${NODE_ONLY} == 'false' ]]
 then
-  if [[ -z $FULL_NODE_PORT || $FULL_NODE_PORT == "null" ]]
+  if [[ -z ${NODE_ADDRESS} ]]
+  then
+    echo "ERROR: A node peer address is required if node is not running with farmer"
+    exit
+  else
+    sed -E "12s|host: (.*)|host: ${NODE_ADDRESS}|" /config/.chia/mainnet/config/config.yaml
+  fi
+fi
+
+# configured testnet
+if [[ ${TESTNET} == 'true' ]]
+then
+  if [[ -z $FULL_NODE_PORT ]]
   then
     s6-setuidgid abc chia configure --set-fullnode-port 58444
   else

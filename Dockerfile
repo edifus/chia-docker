@@ -5,7 +5,6 @@ LABEL maintainer="edifus"
 
 # environment variables
 ARG DEBIAN_FRONTEND="noninteractive"
-ARG BRANCH="latest"
 
 ENV KEYS="generate"
 ENV HARVESTER_ONLY="false"
@@ -15,6 +14,7 @@ ENV WALLET_ONLY="false"
 ENV PLOTS_DIR="/plots"
 ENV FARMER_ADDRESS="null"
 ENV FARMER_PORT="null"
+ENV NODE_ADDRESS="null"
 ENV TESTNET="false"
 ENV FULL_NODE_PORT="null"
 ENV TAIL_DEBUG_LOGS="false"
@@ -40,7 +40,7 @@ RUN apt-get update && \
       python3-dev \
       python3.7-venv \
       python3.7-distutils && \
-    echo "**** cloning ${BRANCH} ****" && \
+    echo "**** cloning latest chia-blockchain ****" && \
     git clone https://github.com/Chia-Network/chia-blockchain.git --branch latest --recurse-submodules && \
     cd /chia-blockchain && \
     /bin/sh ./install.sh && \
@@ -55,5 +55,6 @@ RUN apt-get update && \
 
 COPY root/ /
 
-EXPOSE 8555 8444
+# node = 8444 | farmer = 8447 | wallet = 8449 | ui = 55400
+EXPOSE 8444 8447 8449 55400
 VOLUME /plots /config
