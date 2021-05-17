@@ -124,6 +124,9 @@ todo..
 * WALLET_ONLY=true requires NODE_ONLY=true.
 * HARVESTER_ONLY=true and FARMER_ONLY=false requires FARMER_ADDRESS and FARMER_PORT to be set to connect to a remote farmer.
 * FARMER_ONLY=true and NODE_ONLY=false requires NODE_ADDRESS to be set to get new signage points.
+* HARVESTER_ONLY=true requires CACERTS_DIR to be set. Copy `ca` certs folder from full-node. Information can be found on the official wiki https://github.com/Chia-Network/chia-blockchain/wiki/Farming-on-many-machines.
+* CACERTS_DIR will import existing cacerts to generate other certificate. This will only be imported once to prevent certs from being regenerated repeatedly, see below.
+* **CAUTION: Providing CACERTS_DIR after starting a node/wallet will reset certs and require deleteing /config and resyncing the entire blockchain.**
 
 
 ## Docker Mods
