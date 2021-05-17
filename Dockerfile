@@ -57,4 +57,4 @@ COPY root/ /
 
 # node = 8444 | farmer = 8447 | wallet = 8449 | ui = 55400
 EXPOSE 8444 8447 8449 55400
-VOLUME /plots /config
+VOLUME /config
