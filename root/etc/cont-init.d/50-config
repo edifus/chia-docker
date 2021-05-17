@@ -14,10 +14,13 @@ chown abc:abc -R /config /chia-blockchain
 
 # init certs
 s6-setuidgid abc /chia-blockchain/venv/bin/chia init
-if [[ -n "${CACERTS_DIR}" ]]
+if [[ -n "${CACERTS_DIR}" && ! -f /config/.init-ca-completed ]]
 then
-  echo "**** re-init with provided cacerts ****"
+  echo "**** cacerts provided - re-init chia certs ****"
   s6-setuidgid abc /chia-blockchain/venv/bin/chia init -c ${CACERTS_DIR}
+  touch /config/.init-ca-completed
+else
+  echo "**** cacerts provided but have already been initiated ****"
 fi
 
 # generate keys
