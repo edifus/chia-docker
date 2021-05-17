@@ -80,7 +80,7 @@ then
   then
     echo "ERROR: A node peer address is required if node is not running with farmer"
   else
-    sed -E "12s|host: (.*)|host: ${NODE_ADDRESS}|" /config/.chia/mainnet/config/config.yaml
+    sed -iE "12s|host: (.*)|host: ${NODE_ADDRESS}|" /config/.chia/mainnet/config/config.yaml
   fi
 fi
 
