@@ -128,6 +128,23 @@ todo..
 * `CACERTS_DIR` will import existing ca-certs to generate the other necessary certificate. This will only be imported once to prevent certs from being regenerated repeatedly, see caution below.
 * **CAUTION: Providing `CACERTS_DIR` to an existing node/wallet container will reset certs and require deleting `/config` and resyncing the entire blockchain!**
 
+### Chia command inside container
+
+#### Add keys
+```
+docker exec -it chia /chia-blockchain/venv/bin/chia keys add
+```
+
+#### Add plots directory
+```
+docker exec -it chia /chia-blockchain/venv/bin/chia plots add -d /path/to/other/plots
+```
+
+#### Show wallet
+```
+docker exec -it chia /chia-blockchain/venv/bin/chia wallet show
+```
+
 
 ## Docker Mods
 
