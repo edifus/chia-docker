@@ -4,7 +4,7 @@ on: [push, pull_request, workflow_dispatch]
 
 env:
   ENDPOINT: "edifus/chia"
-  BRANCH: "master"
+  BRANCH: "main"
   IMAGE: "latest"
 
 jobs:
