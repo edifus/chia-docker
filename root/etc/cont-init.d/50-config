@@ -1,6 +1,14 @@
 #!/usr/bin/with-contenv bash
 
 
+# environment variables
+LOG_LEVEL=${LOG_LEVEL:-INFO}
+FULL_NODE=${FULL_NODE:-true}
+HARVESTER_ONLY=${HARVESTER_ONLY:-false}
+FARMER_ONLY=${FARMER_ONLY:-false}
+NODE_ONLY=${NODE_ONLY:-false}
+
+
 # update chia-blockchain
 chown root:root -R /config /chia-blockchain
 cd /chia-blockchain
@@ -18,43 +26,6 @@ chown abc:abc -R /config /chia-blockchain
 # init certs
 s6-setuidgid abc /chia-blockchain/venv/bin/chia init
 
-## cacerts for remote harvester
-if [[ -n "${CACERTS_DIR}" ]]
-then
-  if [[ ! -f /config/.init-ca-completed ]]
-  then
-    echo "**** cacerts provided - recreating certs ****"
-    s6-setuidgid abc /chia-blockchain/venv/bin/chia init -c ${CACERTS_DIR}
-    touch /config/.init-ca-completed
-  elif [[ -f /config/.init-ca-completed ]]
-    echo "**** cacerts provided but have already been initiated - skipping ****"
-  fi
-fi
-
-
-# generate/install keys
-if [[ ${KEYS} == "generate" || -n ${KEYS_FILE} || -f /config/chia-mnemonic.txt ]]
-then
-  if [[ ${KEYS} == "generate" ]]
-  then
-    echo "**** Generating new keys ****"
-    s6-setuidgid abc chia keys generate | sed -n '3p' | tee /config/chia-mnemonic.txt
-  elif [[ -n ${KEYS_FILE} ]]
-    echo "**** Installing existing keys ****"
-    s6-setuidgid abc chia keys add -f ${KEYS_FILE}
-    if [[ ! -f /config/chia-mnemonic.txt ]]
-    then
-      cat ${KEYS_FILE} | tee /config/chia-mnemonic.txt &>/dev/null
-    fi
-  elif [[ -f /config/chia-mnemonic.txt ]]
-    echo "**** Installing existing keys ****"
-    KEYS_FILE="/config/chia-mnemonic.txt"
-    s6-setuidgid abc chia keys add -f ${KEYS_FILE}
-  fi
-else
-  echo "**** Not installing or generating keys ****"
-fi
-
 
 # configure harvester/farmer settings
 if [[ ${HARVESTER_ONLY} == 'true' && ${FARMER_ONLY} == 'false' ]]
@@ -64,6 +35,19 @@ then
     echo "ERROR: A farmer peer address is required if local farmer is not started"
     exit
   else
+    ## cacerts for remote harvester
+    if [[ -n ${CACERTS_DIR} ]]
+    then
+      if [[ ! -f /config/.init-ca-completed ]]
+      then
+        echo "**** cacerts provided - recreating certs ****"
+        s6-setuidgid abc /chia-blockchain/venv/bin/chia init -c ${CACERTS_DIR}
+        touch /config/.init-ca-completed
+      elif [[ -f /config/.init-ca-completed ]]
+        echo "**** cacerts provided but already initalized - skipping ****"
+      fi
+    fi
+    # configure remove farmer ip for harvester
     s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --set-farmer-peer ${FARMER_ADDRESS}:8447
   fi
 fi
@@ -102,6 +86,30 @@ sed -i 's|localhost|127.0.0.1|g' /config/.chia/mainnet/config/config.yaml
 # configure chia daemon
 s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --set-log-level ${LOG_LEVEL}
 s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --upnp false
+
+
+# generate/install keys
+if [[ ${KEYS} == "generate" || -n ${KEYS_FILE} || -f /config/chia-mnemonic.txt ]]
+then
+  if [[ ${KEYS} == "generate" ]]
+  then
+    echo "**** Generating new keys ****"
+    s6-setuidgid abc chia keys generate | sed -n '3p' | tee /config/chia-mnemonic.txt
+  elif [[ -n ${KEYS_FILE} ]]
+    echo "**** Installing existing keys ****"
+    s6-setuidgid abc chia keys add -f ${KEYS_FILE}
+    if [[ ! -f /config/chia-mnemonic.txt ]]
+    then
+      cat ${KEYS_FILE} | tee /config/chia-mnemonic.txt &>/dev/null
+    fi
+  elif [[ -f /config/chia-mnemonic.txt ]]
+    echo "**** Installing existing keys ****"
+    KEYS_FILE="/config/chia-mnemonic.txt"
+    s6-setuidgid abc chia keys add -f ${KEYS_FILE}
+  fi
+else
+  echo "**** Not installing or generating keys ****"
+fi
 
 
 # deactivate chia-blockchain venv

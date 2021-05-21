@@ -29,11 +29,10 @@ services:
       - PGID=1000
     volumes:
       - /path/to/config:/config
-      - /path/to/plots:/plots
+      - /path/to/plots:/plots # optional
     ports:
       - 8444:8444 # node - optional
       - 8447:8447 # farmer - optional
-      - 8449:8449 # wallet - optional
     restart: unless-stopped
 ```
 
@@ -46,9 +45,8 @@ docker run -d \
   -e PGID=1000 \
   -p 8444:8444 `# node - optional` \
   -p 8447:8447 `# farmer - optional` \
-  -p 8449:8449 `# wallet - optional` \
   -v /path/to/config:/config \
-  -v /path/to/plots:/plots \
+  -v /path/to/plots:/plots `# optional` \
   --restart unless-stopped \
   ghcr.io/edifus/chia
 ```
@@ -62,25 +60,24 @@ Container images are configured using parameters passed at runtime (such as thos
 | :----: | --- |
 | `-p 8444` | optional: chia-node port |
 | `-p 8447` | optional: chia-farmer port |
-| `-p 8449` | optional: chia-wallet port |
 | `-e PUID=1000` | for UserID - see below for explanation |
 | `-e PGID=1000` | for GroupID - see below for explanation |
-| `-e KEYS=generate` | options: 'generate' (default) or path to text file mounted in container (/keys) containing mnemonic |
-| `-e CACERTS_DIR=/ca` | optional: provide cacerts on container init for proper communication |
-| `-e HARVESTER_ONLY=false` | Boolean to enable/disable harvester, FARMER_ADDRESS and FARMER_PORT required if not running a farmer in same container |
-| `-e FARMER_ADRESS=x.x.x.x` | optional: remote farmer IP for harvester to report to |
-| `-e FARMER_PORT=8447` | optional: remote farmer port for harvester to report to |
-| `-e FARMER_ONLY=false` | Boolean to enable/disable farmer, NODE_ADDRESS required if not running node in same container |
+| `-e PLOTS_DIR=/plots` | optional: path to plots directory for farmer/harvester - use with -v below |
+| `-e KEYS=generate` | optional: generate new keys on container init - saves and overwrites /config/chia-mnemonic.txt |
+| `-e KEYS_FILE=/keys.txt` | optional: text file of chia mnemonic to import on container init - use with -v below |
+| `-e CACERTS_DIR=/ca` | optional: provide cacerts on container init for harvester communication - default: false  - use with -v below |
+| `-e FULL_NODE=false` | optional: disable full node (node, wallet, farmer, harvester) to enable individual services (see below) - default: true |
+| `-e HARVESTER_ONLY=true` | optional: enable harvester, FARMER_ADDRESS required if not running a farmer in same container - default: false |
+| `-e FARMER_ADRESS=x.x.x.x` | optional: remote farmer IP for harvester |
+| `-e FARMER_ONLY=true` | optional: enable farmer, NODE_ADDRESS required if not running node in same container |
 | `-e NODE_ADDRESS=x.x.x.x` | optional: remote node IP for farmer to get new singage points |
-| `-e WALLET_ONLY=false` | Boolean to enable/disable wallet, local node in same container required |
-| `-e NODE_ONLY=false` | Boolean to enable/disable node |
-| `-e TESTNET=false` | Boolean to enable/disable testnet instead of mainnet |
-| `-e FULL_NODE_PORT=58444` | Port for testnet connections |
+| `-e NODE_ONLY=true` | optional: enable node |
 | `-e TAIL_DEBUG_LOGS=false` | Tail debug logs to docker logs |
-| `-v /config` | where ruTorrent should store it's config files |
-| `-v /plots` | optional: path to your plots folder |
-| `-v /keys` | optional: path to your chia mnemonic text file |
-| `-v /ca` | optional: path to your cacerts folder |
+| `-e LOG_LEVEL=INFO` | optional: change debug log level - default: INFO |
+| `-v /path/to/config:/config` | where to store chia configuration |
+| `-v /path/to/plots:/plots` | optional: path to your plots folder |
+| `-v /path/to/keys.txt:/keys.txt` | optional: path to your chia mnemonic text file |
+| `-v /path/to/cacerts:/ca` | optional: path to your `ca` folder |
 
 
 ## Environment variables from files (Docker secrets)
@@ -120,13 +117,14 @@ In this instance `PUID=1000` and `PGID=1000`, to find yours use `id user` as bel
 
 todo..
 
-* If `FARMER_ONLY`, `HARVESTER_ONLY`, `NODE_ONLY`, `WALLET_ONLY` are not provided a full-node will be started.
-* `WALLET_ONLY=true` **requires** `NODE_ONLY=true`.
+* If `FARMER_ONLY`, `HARVESTER_ONLY` and `NODE_ONLY` are not provided a full-node will be started.
+* To start individual services set `FULL_NODE=false` and configure `FARMER_ONLY`, `HARVESTER_ONLY` or `NODE_ONLY`.
 * `FARMER_ONLY=true` with `NODE_ONLY=false` **requires** `NODE_ADDRESS` to be set to get new signage points.
-* `HARVESTER_ONLY=true` with `FARMER_ONLY=false` **requires** `FARMER_ADDRESS` and `FARMER_PORT` to be set to connect to a remote farmer.
+* `HARVESTER_ONLY=true` with `FARMER_ONLY=false` **requires** `FARMER_ADDRESS` to be set to connect to a remote farmer.
 * `HARVESTER_ONLY=true` with `FARMER_ONLY=false` **requires** `CACERTS_DIR` to be set. Copy `ca` certs folder from a previously setup farmer. Information can be found on the official wiki https://github.com/Chia-Network/chia-blockchain/wiki/Farming-on-many-machines.
 * `CACERTS_DIR` will import existing ca-certs to generate the other necessary certificate. This will only be imported once to prevent certs from being regenerated repeatedly, see caution below.
 * **CAUTION: Providing `CACERTS_DIR` to an existing node/wallet container will reset certs and require deleting `/config` and resyncing the entire blockchain!**
+
 
 ### Chia command inside container
 

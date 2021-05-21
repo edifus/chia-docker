@@ -1,5 +1,10 @@
 #!/usr/bin/with-contenv bash
 
+
+# environment variables
+TAIL_DEBUG_LOGS=${TAIL_DEBUG_LOGS:-false}
+
+
 # shutdown trap
 _term() {
   echo "Caught SIGTERM signal!"
@@ -7,12 +12,17 @@ _term() {
 }
 trap _term SIGTERM
 
+
 # activate chia-blockchain venv
 cd /chia-blockchain ; . ./activate
 
+
 # run chia daemons
-if [[ ${FARMER_ONLY} == 'true' || ${HARVESTER_ONLY} == 'true' || ${NODE_ONLY} == 'true' || ${WALLET_ONLY} == 'true' ]]
+if [[ ${FULL_NODE} == 'true' ]]
 then
+  # start full-node
+  s6-setuidgid abc /chia-blockchain/venv/bin/chia start farmer
+elif [[ ${FARMER_ONLY} == 'true' || ${HARVESTER_ONLY} == 'true' || ${NODE_ONLY} == 'true' ]]
   # start farmer-only
   if [[ ${FARMER_ONLY} == 'true' ]]
   then
@@ -28,14 +38,11 @@ then
   then
     s6-setuidgid abc /chia-blockchain/venv/bin/chia start node
   fi
-  # start wallet-only
-  if [[ ${WALLET_ONLY} == 'true' ]]; then
-    s6-setuidgid abc /chia-blockchain/venv/bin/chia start wallet-only
-  fi
 else
-  # start full-node
-  s6-setuidgid abc /chia-blockchain/venv/bin/chia start farmer
+  echo "ERROR: invalid configuration - enable at least one service or run a full node"
+  exit
 fi
+
 
 # run loop
 while true
