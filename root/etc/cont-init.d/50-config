@@ -1,5 +1,14 @@
 #!/usr/bin/with-contenv bash
 
+
+# environment variables
+LOG_LEVEL=${LOG_LEVEL:-INFO}
+FULL_NODE=${FULL_NODE:-true}
+HARVESTER_ONLY=${HARVESTER_ONLY:-false}
+FARMER_ONLY=${FARMER_ONLY:-false}
+NODE_ONLY=${NODE_ONLY:-false}
+
+
 # update chia-blockchain
 chown root:root -R /config /chia-blockchain
 cd /chia-blockchain
@@ -9,97 +18,104 @@ git reset --hard FETCH_HEAD
 /bin/sh install.sh
 chown abc:abc -R /config /chia-blockchain
 
+
 # activate chia-blockchain venv
 . ./activate
 
+
 # init certs
 s6-setuidgid abc /chia-blockchain/venv/bin/chia init
-if [[ -n "${CACERTS_DIR}" && ! -f /config/.init-ca-completed ]]
-then
-  echo "**** cacerts provided - re-init chia certs ****"
-  s6-setuidgid abc /chia-blockchain/venv/bin/chia init -c ${CACERTS_DIR}
-  touch /config/.init-ca-completed
-else
-  echo "**** cacerts provided but have already been initiated ****"
-fi
 
-# generate keys
-if [[ -f /config/chia-mnemonic.txt ]]
-then
-  echo "**** Previous keys found ****"
-  KEYS="/config/chia-mnemonic.txt"
-fi
 
-if [[ ${KEYS} == "generate" ]]
+# configure harvester/farmer settings
+if [[ ${HARVESTER_ONLY} == 'true' && ${FARMER_ONLY} == 'false' ]]
 then
-  echo "**** Generating new keys ****"
-  s6-setuidgid abc chia keys generate | tee /config/key-tmp.txt
-  sed -n '3p' /config/key-tmp.txt | tee /config/chia-mnemonic.txt &>/dev/null
-  rm -f /config/key-tmp.txt
-else
-  echo "**** Installing existing keys ****"
-  s6-setuidgid abc chia keys add -f ${KEYS}
-  if [[ ! -f /config/chia-mnemonic.txt ]]
+  if [[ -z ${FARMER_ADDRESS+x} ]]
   then
-    cat ${KEYS} | tee /config/chia-mnemonic.txt &>/dev/null
-  fi
-fi
-
-# configure plots directory
-if [[ ! "$(ls -A ${PLOTS_DIR})" ]]
-then
-  echo "Plots directory appears to be empty and you have not specified another, try mounting a plot directory with the docker -v command"
-fi
-
-s6-setuidgid abc chia plots add -d ${PLOTS_DIR}
-
-# configure chia daemon
-s6-setuidgid abc chia configure --set-log-level INFO
-s6-setuidgid abc chia configure --upnp false
-
-
-# configure harvester settings
-if [[ ${HARVESTER_ONLY} == 'true' ]]
-then
-  if [[ ${FARMER_ONLY} == 'true' ]]
-  then
-    echo "**** Harvester using local farmer ****"
-  elif [[ ${FARMER_ONLY} == 'false' && ( -z ${FARMER_ADDRESS} || -z ${FARMER_PORT} ) ]]
-  then
-    echo "ERROR: A farmer peer address and port are required if local farmer is not started"
+    echo "ERROR: A farmer peer address is required if local farmer is not started"
     exit
   else
-    s6-setuidgid abc chia configure --set-farmer-peer ${FARMER_ADDRESS}:${FARMER_PORT}
+    ## cacerts for remote harvester
+    if [[ -n ${CACERTS_DIR} ]]
+    then
+      if [[ ! -f /config/.init-ca-completed ]]
+      then
+        echo "**** cacerts provided - recreating certs ****"
+        s6-setuidgid abc /chia-blockchain/venv/bin/chia init -c ${CACERTS_DIR}
+        touch /config/.init-ca-completed
+      elif [[ -f /config/.init-ca-completed ]]
+      then
+        echo "**** cacerts provided but already initalized - skipping ****"
+      fi
+    fi
+    # configure remove farmer ip for harvester
+    s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --set-farmer-peer ${FARMER_ADDRESS}:8447
   fi
 fi
 
-# configure farmer settings
 if [[ ${FARMER_ONLY} == 'true' && ${NODE_ONLY} == 'false' ]]
 then
-  if [[ -z ${NODE_ADDRESS} ]]
+  if [[ -z ${NODE_ADDRESS+x} ]]
   then
     echo "ERROR: A node peer address is required if node is not running with farmer"
+    exit
   else
-    sed -iE "12s|host: (.*)|host: ${NODE_ADDRESS}|" /config/.chia/mainnet/config/config.yaml
+    sed -i -E "12s|host: (.*)|host: ${NODE_ADDRESS}|" /config/.chia/mainnet/config/config.yaml
   fi
 fi
 
-# configured testnet
-if [[ ${TESTNET} == 'true' ]]
+
+# configure plots directory
+if [[ ${FARMER_ONLY} == 'true' || ${HARVESTER_ONLY} == 'true' || ${FULL_NODE} == 'true' ]]
 then
-  if [[ -z $FULL_NODE_PORT ]]
+  if [[ -z ${PLOTS_DIR+x} || ! "$(ls -A ${PLOTS_DIR})" ]]
   then
-    s6-setuidgid abc chia configure --set-fullnode-port 58444
-  else
-    s6-setuidgid abc chia configure --set-fullnode-port ${FULL_NODE_PORT}
+    echo "WARNING: No plots found, a plot directory is required to properly farm"
+  elif [[ -n ${PLOTS_DIR} ]]
+  then
+    s6-setuidgid abc /chia-blockchain/venv/bin/chia plots add -d ${PLOTS_DIR}
   fi
 fi
+
 
 # remove ipv6
 sed -i 's|localhost|127.0.0.1|g' /config/.chia/mainnet/config/config.yaml
 
+
+# configure chia daemon
+s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --set-log-level ${LOG_LEVEL}
+s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --upnp false
+
+
+# generate/install keys
+if [[ ${KEYS} == "generate" || -n ${KEYS_FILE} || -f /config/chia-mnemonic.txt ]]
+then
+  if [[ ${KEYS} == "generate" ]]
+  then
+    echo "**** Generating new keys ****"
+    s6-setuidgid abc chia keys generate | sed -n '3p' | tee /config/chia-mnemonic.txt
+  elif [[ -n ${KEYS_FILE} ]]
+  then
+    echo "**** Installing existing keys ****"
+    s6-setuidgid abc chia keys add -f ${KEYS_FILE}
+    if [[ ! -f /config/chia-mnemonic.txt ]]
+    then
+      cat ${KEYS_FILE} | tee /config/chia-mnemonic.txt &>/dev/null
+    fi
+  elif [[ -f /config/chia-mnemonic.txt ]]
+  then
+    echo "**** Installing existing keys ****"
+    KEYS_FILE="/config/chia-mnemonic.txt"
+    s6-setuidgid abc chia keys add -f ${KEYS_FILE}
+  fi
+else
+  echo "**** Not installing or generating keys ****"
+fi
+
+
 # deactivate chia-blockchain venv
 deactivate
+
 
 # set proper user permissions
 chown abc:abc -R \
