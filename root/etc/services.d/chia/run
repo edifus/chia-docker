@@ -5,8 +5,8 @@
 TAIL_DEBUG_LOGS=${TAIL_DEBUG_LOGS:-false}
 FULL_NODE=${FULL_NODE:-true}
 HARVESTER_ONLY=${HARVESTER_ONLY:-false}
-FARMER_ONLY=${FARMER_ONLY:-false}
 NODE_ONLY=${NODE_ONLY:-false}
+
 
 # shutdown trap
 _term() {
@@ -25,13 +25,8 @@ if [[ ${FULL_NODE} == 'true' ]]
 then
   # start full-node
   s6-setuidgid abc /chia-blockchain/venv/bin/chia start farmer
-elif [[ ${FARMER_ONLY} == 'true' || ${HARVESTER_ONLY} == 'true' || ${NODE_ONLY} == 'true' ]]
+elif [[ ${HARVESTER_ONLY} == 'true' || ${NODE_ONLY} == 'true' ]]
 then
-  # start farmer-only
-  if [[ ${FARMER_ONLY} == 'true' ]]
-  then
-    s6-setuidgid abc /chia-blockchain/venv/bin/chia start farmer-only
-  fi
   # start harvester
   if [[ ${HARVESTER_ONLY} == 'true' ]]
   then

@@ -1,14 +1,11 @@
 FROM ghcr.io/linuxserver/baseimage-ubuntu:focal
 
-
 # set version label
 LABEL maintainer="edifus"
-
 
 # environment variables
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV HOME="/config"
-
 
 # install chia-blockchain
 RUN apt-get update && \
@@ -31,7 +28,7 @@ RUN apt-get update && \
       python3.8-venv \
       python3.8-distutils && \
     echo "**** cloning latest chia-blockchain ****" && \
-    git clone https://github.com/Chia-Network/chia-blockchain.git --branch latest --recurse-submodules && \
+    git clone https://github.com/Chia-Network/chia-blockchain.git --branch latest --recurse-submodules="mozilla-ca" && \
     cd /chia-blockchain && \
     /bin/sh ./install.sh && \
     mkdir /plots && \
@@ -43,14 +40,11 @@ RUN apt-get update && \
   	  /var/lib/apt/lists/* \
   	  /var/tmp/*
 
-
 # copy local files
 COPY root/ /
 
-
 # node = 8444 | farmer = 8447
 EXPOSE 8444 8447
-
 
 # chia configuration
 VOLUME /config
