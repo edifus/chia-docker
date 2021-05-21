@@ -1,6 +1,11 @@
 name: Build official Chia Docker Image
 
 on:
+  push:
+    branches:
+      - master
+  release:
+    types: [published, created, edited]
   workflow_dispatch:
     inputs:
       upstream_branch:
