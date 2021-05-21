@@ -3,7 +3,10 @@
 
 # environment variables
 TAIL_DEBUG_LOGS=${TAIL_DEBUG_LOGS:-false}
-
+FULL_NODE=${FULL_NODE:-true}
+HARVESTER_ONLY=${HARVESTER_ONLY:-false}
+FARMER_ONLY=${FARMER_ONLY:-false}
+NODE_ONLY=${NODE_ONLY:-false}
 
 # shutdown trap
 _term() {
