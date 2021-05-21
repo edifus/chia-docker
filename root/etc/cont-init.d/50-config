@@ -49,6 +49,7 @@ then
       fi
     fi
     # configure remove farmer ip for harvester
+    echo "**** setting farmer peer ip: ${FARMER_ADDRESS} ****"
     s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --set-farmer-peer ${FARMER_ADDRESS}:8447
   fi
 fi
@@ -73,6 +74,7 @@ then
     echo "WARNING: No plots found, a plot directory is required to properly farm"
   elif [[ -n ${PLOTS_DIR} ]]
   then
+    echo "**** setting plots directory: ${PLOTS_DIR} ****"
     s6-setuidgid abc /chia-blockchain/venv/bin/chia plots add -d ${PLOTS_DIR}
   fi
 fi
@@ -83,6 +85,7 @@ sed -i 's|localhost|127.0.0.1|g' /config/.chia/mainnet/config/config.yaml
 
 
 # configure chia daemon
+echo "**** setting log level: ${LOG_LEVEL} ****"
 s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --set-log-level ${LOG_LEVEL}
 s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --upnp false
 
