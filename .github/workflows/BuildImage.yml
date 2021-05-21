@@ -17,9 +17,9 @@ jobs:
           docker build --no-cache -t ${{ github.sha }} .
       - name: Tag image
         run: |
-          docker tag ${{ github.sha }} ${ENDPOINT}
+          docker tag ${{ github.sha }} ${ENDPOINT}:${BRANCH}
           docker tag ${{ github.sha }} ${ENDPOINT}:${{ github.sha }}
-          docker tag ${{ github.sha }} ghcr.io/${ENDPOINT}
+          docker tag ${{ github.sha }} ghcr.io/${ENDPOINT}:${BRANCH}
           docker tag ${{ github.sha }} ghcr.io/${ENDPOINT}:${{ github.sha }}
       - name: Credential check
         run: |
@@ -40,7 +40,7 @@ jobs:
       - name: Push tags to GitHub Container Registry
         if: ${{ env.CR_USER && env.CR_PAT }}
         run: |
-          docker push ghcr.io/${ENDPOINT}
+          docker push ghcr.io/${ENDPOINT}:${BRANCH}
  #     - name: Login to DockerHub
  #       if: ${{ env.DOCKERUSER && env.DOCKERPASS }}
  #       run: |
@@ -48,4 +48,4 @@ jobs:
  #     - name: Push tags to DockerHub
  #       if: ${{ env.DOCKERUSER && env.DOCKERPASS }}
  #       run: |
- #         docker push ${ENDPOINT}
+ #         docker push ${ENDPOINT}:${BRANCH}
