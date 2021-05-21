@@ -93,10 +93,11 @@ s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --upnp false
 # generate/install keys
 if [[ ${KEYS} == "generate" || -n ${KEYS_FILE} || -f /config/chia-mnemonic.txt ]]
 then
-  if [[ ${KEYS} == "generate" ]]
+  if [[ -f /config/chia-mnemonic.txt ]]
   then
-    echo "**** Generating new keys ****"
-    s6-setuidgid abc chia keys generate | sed -n '3p' | tee /config/chia-mnemonic.txt
+    echo "**** Installing existing keys ****"
+    KEYS_FILE="/config/chia-mnemonic.txt"
+    s6-setuidgid abc chia keys add -f ${KEYS_FILE}
   elif [[ -n ${KEYS_FILE} ]]
   then
     echo "**** Installing existing keys ****"
@@ -105,11 +106,10 @@ then
     then
       cat ${KEYS_FILE} | tee /config/chia-mnemonic.txt &>/dev/null
     fi
-  elif [[ -f /config/chia-mnemonic.txt ]]
+  elif [[ ${KEYS} == "generate" ]]
   then
-    echo "**** Installing existing keys ****"
-    KEYS_FILE="/config/chia-mnemonic.txt"
-    s6-setuidgid abc chia keys add -f ${KEYS_FILE}
+    echo "**** Generating new keys ****"
+    s6-setuidgid abc chia keys generate | sed -n '3p' | tee /config/chia-mnemonic.txt
   fi
 else
   echo "**** Not installing or generating keys ****"
