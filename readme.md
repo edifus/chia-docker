@@ -69,8 +69,6 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e FULL_NODE=false` | optional: disable full node (node, wallet, farmer, harvester) to enable individual services (see below) - default: true |
 | `-e HARVESTER_ONLY=true` | optional: enable harvester, FARMER_ADDRESS required if not running a farmer in same container - default: false |
 | `-e FARMER_ADRESS=x.x.x.x` | optional: remote farmer IP for harvester |
-| `-e FARMER_ONLY=true` | optional: enable farmer, NODE_ADDRESS required if not running node in same container - default: false |
-| `-e NODE_ADDRESS=x.x.x.x` | optional: remote node IP for farmer to get new singage points |
 | `-e NODE_ONLY=true` | optional: enable node - default: false |
 | `-e TAIL_DEBUG_LOGS=true` | optional: tail debug logs to container console logs - default: false |
 | `-e LOG_LEVEL=INFO` | optional: change debug log level - default: INFO |
@@ -117,13 +115,12 @@ In this instance `PUID=1000` and `PGID=1000`, to find yours use `id user` as bel
 
 todo..
 
-* If `FARMER_ONLY`, `HARVESTER_ONLY` and `NODE_ONLY` are not provided a full-node will be started.
-* To start individual services set `FULL_NODE=false` and configure `FARMER_ONLY`, `HARVESTER_ONLY` or `NODE_ONLY`.
-* `FARMER_ONLY=true` with `NODE_ONLY=false` **requires** `NODE_ADDRESS` to be set to get new signage points.
-* `HARVESTER_ONLY=true` with `FARMER_ONLY=false` **requires** `FARMER_ADDRESS` to be set to connect to a remote farmer.
-* `HARVESTER_ONLY=true` with `FARMER_ONLY=false` **requires** `CACERTS_DIR` to be set. Copy `ca` certs folder from a previously setup farmer. Information can be found on the official wiki https://github.com/Chia-Network/chia-blockchain/wiki/Farming-on-many-machines.
+* **IMPORTANT:** To start individual services set `FULL_NODE=false` and configure `HARVESTER_ONLY` or `NODE_ONLY`.
+* If `HARVESTER_ONLY` and `NODE_ONLY` are not provided a full-node will be started.
+* `HARVESTER_ONLY=true` **requires** `FARMER_ADDRESS` to be set to connect to a remote farmer.
+* `HARVESTER_ONLY=true` **requires** `CACERTS_DIR` to be provided at least once to configure certs signed by the farmer. Copy `ca` certs folder from a previously setup farmer/full-node. Information can be found on the official wiki https://github.com/Chia-Network/chia-blockchain/wiki/Farming-on-many-machines.
 * `CACERTS_DIR` will import existing ca-certs to generate the other necessary certificate. This will only be imported once to prevent certs from being regenerated repeatedly, see caution below.
-* **CAUTION: Providing `CACERTS_DIR` to an existing node/wallet container will reset certs and require deleting `/config` and resyncing the entire blockchain!**
+* **CAUTION:** Providing `CACERTS_DIR` to an existing node/wallet container will reset certs and require deleting `/config` and resyncing the entire blockchain!
 
 
 ### Chia command inside container

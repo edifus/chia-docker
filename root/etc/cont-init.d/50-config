@@ -1,13 +1,11 @@
 #!/usr/bin/with-contenv bash
 
-
 # environment variables
 LOG_LEVEL=${LOG_LEVEL:-INFO}
+UPNP=${UPNP:-false}
 FULL_NODE=${FULL_NODE:-true}
 HARVESTER_ONLY=${HARVESTER_ONLY:-false}
-FARMER_ONLY=${FARMER_ONLY:-false}
 NODE_ONLY=${NODE_ONLY:-false}
-
 
 # update chia-blockchain
 chown root:root -R /config /chia-blockchain
@@ -18,17 +16,14 @@ git reset --hard FETCH_HEAD
 /bin/sh install.sh
 chown abc:abc -R /config /chia-blockchain
 
-
 # activate chia-blockchain venv
 . ./activate
-
 
 # init certs
 s6-setuidgid abc /chia-blockchain/venv/bin/chia init
 
-
 # configure harvester/farmer settings
-if [[ ${HARVESTER_ONLY} == 'true' && ${FARMER_ONLY} == 'false' ]]
+if [[ ${HARVESTER_ONLY} == 'true' ]]
 then
   if [[ -z ${FARMER_ADDRESS+x} ]]
   then
@@ -54,20 +49,8 @@ then
   fi
 fi
 
-if [[ ${FARMER_ONLY} == 'true' && ${NODE_ONLY} == 'false' ]]
-then
-  if [[ -z ${NODE_ADDRESS+x} ]]
-  then
-    echo "ERROR: A node peer address is required if node is not running with farmer"
-    exit
-  else
-    sed -i -E "12s|host: (.*)|host: ${NODE_ADDRESS}|" /config/.chia/mainnet/config/config.yaml
-  fi
-fi
-
-
 # configure plots directory
-if [[ ${FARMER_ONLY} == 'true' || ${HARVESTER_ONLY} == 'true' || ${FULL_NODE} == 'true' ]]
+if [[ ${HARVESTER_ONLY} == 'true' || ${FULL_NODE} == 'true' ]]
 then
   if [[ -z ${PLOTS_DIR+x} || ! "$(ls -A ${PLOTS_DIR})" ]]
   then
@@ -79,28 +62,26 @@ then
   fi
 fi
 
-
 # remove ipv6
 sed -i 's|localhost|127.0.0.1|g' /config/.chia/mainnet/config/config.yaml
-
 
 # configure chia daemon
 echo "**** setting log level: ${LOG_LEVEL} ****"
 s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --set-log-level ${LOG_LEVEL}
-s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --upnp false
-
+echo "**** setting upnp enabled: ${UPNP} "
+s6-setuidgid abc /chia-blockchain/venv/bin/chia configure --upnp ${UPNP}
 
 # generate/install keys
 if [[ ${KEYS} == "generate" || -n ${KEYS_FILE} || -f /config/chia-mnemonic.txt ]]
 then
   if [[ -f /config/chia-mnemonic.txt ]]
   then
-    echo "**** Installing existing keys ****"
     KEYS_FILE="/config/chia-mnemonic.txt"
+    echo "**** Installing existing keys from file: \"${KEYS_FILE}\" ****"
     s6-setuidgid abc chia keys add -f ${KEYS_FILE}
   elif [[ -n ${KEYS_FILE} ]]
   then
-    echo "**** Installing existing keys ****"
+    echo "**** Installing existing keys from file: \"${KEYS_FILE}\" ****"
     s6-setuidgid abc chia keys add -f ${KEYS_FILE}
     if [[ ! -f /config/chia-mnemonic.txt ]]
     then
@@ -115,10 +96,8 @@ else
   echo "**** Not installing or generating keys ****"
 fi
 
-
 # deactivate chia-blockchain venv
 deactivate
-
 
 # set proper user permissions
 chown abc:abc -R \
