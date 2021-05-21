@@ -23,6 +23,7 @@ then
   # start full-node
   s6-setuidgid abc /chia-blockchain/venv/bin/chia start farmer
 elif [[ ${FARMER_ONLY} == 'true' || ${HARVESTER_ONLY} == 'true' || ${NODE_ONLY} == 'true' ]]
+then
   # start farmer-only
   if [[ ${FARMER_ONLY} == 'true' ]]
   then
@@ -38,16 +39,13 @@ elif [[ ${FARMER_ONLY} == 'true' || ${HARVESTER_ONLY} == 'true' || ${NODE_ONLY} 
   then
     s6-setuidgid abc /chia-blockchain/venv/bin/chia start node
   fi
-else
-  echo "ERROR: invalid configuration - enable at least one service or run a full node"
-  exit
 fi
-
 
 # run loop
 while true
 do
-  if [[ ${TAIL_DEBUG_LOGS} == 'true' ]]; then
+  if [[ ${TAIL_DEBUG_LOGS} == 'true' ]]
+  then
     tail -F /config/.chia/mainnet/log/debug.log
   else
     sleep 30

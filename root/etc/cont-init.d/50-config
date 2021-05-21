@@ -44,6 +44,7 @@ then
         s6-setuidgid abc /chia-blockchain/venv/bin/chia init -c ${CACERTS_DIR}
         touch /config/.init-ca-completed
       elif [[ -f /config/.init-ca-completed ]]
+      then
         echo "**** cacerts provided but already initalized - skipping ****"
       fi
     fi
@@ -67,13 +68,11 @@ fi
 # configure plots directory
 if [[ ${FARMER_ONLY} == 'true' || ${HARVESTER_ONLY} == 'true' || ${FULL_NODE} == 'true' ]]
 then
-  if [[ -z ${PLOTS_DIR+x} ]]
+  if [[ -z ${PLOTS_DIR+x} || ! "$(ls -A ${PLOTS_DIR})" ]]
   then
-    echo "ERROR: A plot directory is required to properly farm"
-    exit
-  elif [[ ! "$(ls -A ${PLOTS_DIR})" ]]
-    echo "WARNING: Plot directory is empty, check configuration"
-  else
+    echo "WARNING: No plots found, a plot directory is required to properly farm"
+  elif [[ -n ${PLOTS_DIR} ]]
+  then
     s6-setuidgid abc /chia-blockchain/venv/bin/chia plots add -d ${PLOTS_DIR}
   fi
 fi
@@ -96,6 +95,7 @@ then
     echo "**** Generating new keys ****"
     s6-setuidgid abc chia keys generate | sed -n '3p' | tee /config/chia-mnemonic.txt
   elif [[ -n ${KEYS_FILE} ]]
+  then
     echo "**** Installing existing keys ****"
     s6-setuidgid abc chia keys add -f ${KEYS_FILE}
     if [[ ! -f /config/chia-mnemonic.txt ]]
@@ -103,6 +103,7 @@ then
       cat ${KEYS_FILE} | tee /config/chia-mnemonic.txt &>/dev/null
     fi
   elif [[ -f /config/chia-mnemonic.txt ]]
+  then
     echo "**** Installing existing keys ****"
     KEYS_FILE="/config/chia-mnemonic.txt"
     s6-setuidgid abc chia keys add -f ${KEYS_FILE}
