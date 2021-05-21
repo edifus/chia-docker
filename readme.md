@@ -58,8 +58,8 @@ Container images are configured using parameters passed at runtime (such as thos
 
 | Parameter | Function |
 | :----: | --- |
-| `-p 8444` | optional: chia-node port |
-| `-p 8447` | optional: chia-farmer port |
+| `-p 8444:8444` | optional: chia-node port |
+| `-p 8447:8447` | optional: chia-farmer port |
 | `-e PUID=1000` | for UserID - see below for explanation |
 | `-e PGID=1000` | for GroupID - see below for explanation |
 | `-e PLOTS_DIR=/plots` | optional: path to plots directory for farmer/harvester - use with -v below |
@@ -72,7 +72,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e FARMER_ONLY=true` | optional: enable farmer, NODE_ADDRESS required if not running node in same container |
 | `-e NODE_ADDRESS=x.x.x.x` | optional: remote node IP for farmer to get new singage points |
 | `-e NODE_ONLY=true` | optional: enable node |
-| `-e TAIL_DEBUG_LOGS=false` | Tail debug logs to docker logs |
+| `-e TAIL_DEBUG_LOGS=false` | optional: Tail debug logs to docker logs - WARNING: very verbose with node running |
 | `-e LOG_LEVEL=INFO` | optional: change debug log level - default: INFO |
 | `-v /path/to/config:/config` | where to store chia configuration |
 | `-v /path/to/plots:/plots` | optional: path to your plots folder |
