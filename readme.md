@@ -65,14 +65,14 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e PLOTS_DIR=/plots` | optional: path to plots directory for farmer/harvester - use with -v below |
 | `-e KEYS=generate` | optional: generate new keys on container init - saves and overwrites /config/chia-mnemonic.txt |
 | `-e KEYS_FILE=/keys.txt` | optional: text file of chia mnemonic to import on container init - use with -v below |
-| `-e CACERTS_DIR=/ca` | optional: provide cacerts on container init for harvester communication - default: false  - use with -v below |
+| `-e CACERTS_DIR=/ca` | optional: provide cacerts on container init for harvester communication - use with -v below |
 | `-e FULL_NODE=false` | optional: disable full node (node, wallet, farmer, harvester) to enable individual services (see below) - default: true |
 | `-e HARVESTER_ONLY=true` | optional: enable harvester, FARMER_ADDRESS required if not running a farmer in same container - default: false |
 | `-e FARMER_ADRESS=x.x.x.x` | optional: remote farmer IP for harvester |
-| `-e FARMER_ONLY=true` | optional: enable farmer, NODE_ADDRESS required if not running node in same container |
+| `-e FARMER_ONLY=true` | optional: enable farmer, NODE_ADDRESS required if not running node in same container - default: false |
 | `-e NODE_ADDRESS=x.x.x.x` | optional: remote node IP for farmer to get new singage points |
-| `-e NODE_ONLY=true` | optional: enable node |
-| `-e TAIL_DEBUG_LOGS=false` | optional: Tail debug logs to docker logs - WARNING: very verbose with node running |
+| `-e NODE_ONLY=true` | optional: enable node - default: false |
+| `-e TAIL_DEBUG_LOGS=true` | optional: tail debug logs to container console logs - default: false |
 | `-e LOG_LEVEL=INFO` | optional: change debug log level - default: INFO |
 | `-v /path/to/config:/config` | where to store chia configuration |
 | `-v /path/to/plots:/plots` | optional: path to your plots folder |
