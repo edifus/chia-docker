@@ -1,10 +1,11 @@
-name: Build Image
+name: Build Dev Image
 
 on: [push, pull_request, workflow_dispatch]
 
 env:
   ENDPOINT: "edifus/chia"
   BRANCH: "develop"
+  IMAGE: "develop"
 
 jobs:
   build:
@@ -17,9 +18,9 @@ jobs:
           docker build --no-cache -t ${{ github.sha }} .
       - name: Tag image
         run: |
-          docker tag ${{ github.sha }} ${ENDPOINT}:${BRANCH}
+          docker tag ${{ github.sha }} ${ENDPOINT}:${IMAGE}
           docker tag ${{ github.sha }} ${ENDPOINT}:${{ github.sha }}
-          docker tag ${{ github.sha }} ghcr.io/${ENDPOINT}:${BRANCH}
+          docker tag ${{ github.sha }} ghcr.io/${ENDPOINT}:${IMAGE}
           docker tag ${{ github.sha }} ghcr.io/${ENDPOINT}:${{ github.sha }}
       - name: Credential check
         run: |
@@ -40,7 +41,7 @@ jobs:
       - name: Push tags to GitHub Container Registry
         if: ${{ env.CR_USER && env.CR_PAT }}
         run: |
-          docker push ghcr.io/${ENDPOINT}:${BRANCH}
+          docker push ghcr.io/${ENDPOINT}:${IMAGE}
  #     - name: Login to DockerHub
  #       if: ${{ env.DOCKERUSER && env.DOCKERPASS }}
  #       run: |
@@ -48,4 +49,4 @@ jobs:
  #     - name: Push tags to DockerHub
  #       if: ${{ env.DOCKERUSER && env.DOCKERPASS }}
  #       run: |
- #         docker push ${ENDPOINT}:${BRANCH}
+ #         docker push ${ENDPOINT}:${IMAGE}
