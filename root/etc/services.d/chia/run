@@ -1,12 +1,10 @@
 #!/usr/bin/with-contenv bash
 
-
 # environment variables
 TAIL_DEBUG_LOGS=${TAIL_DEBUG_LOGS:-false}
 FULL_NODE=${FULL_NODE:-true}
 HARVESTER_ONLY=${HARVESTER_ONLY:-false}
 NODE_ONLY=${NODE_ONLY:-false}
-
 
 # shutdown trap
 _term() {
@@ -15,10 +13,8 @@ _term() {
 }
 trap _term SIGTERM
 
-
 # activate chia-blockchain venv
 cd /chia-blockchain ; . ./activate
-
 
 # run chia daemons
 if [[ ${FULL_NODE} == 'true' ]]
