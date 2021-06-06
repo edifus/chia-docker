@@ -7,16 +7,15 @@ FULL_NODE=${FULL_NODE:-true}
 HARVESTER_ONLY=${HARVESTER_ONLY:-false}
 NODE_ONLY=${NODE_ONLY:-false}
 
-# latest release version
+# checkout latest release version
 CHIA_RELEASE=$(curl -sX GET "https://api.github.com/repos/Chia-Network/chia-blockchain/releases/latest" \
   | awk '/tag_name/{print $4;exit}' FS='[""]')
+git -C /chia-blockchain fetch
+git -C /chia-blockchain checkout ${CHIA_RELEASE}
 
 # update chia-blockchain
 chown root:root -R /config /chia-blockchain
 cd /chia-blockchain
-git fetch
-git checkout ${CHIA_RELEASE}
-git reset --hard FETCH_HEAD
 /bin/sh install.sh
 chown abc:abc -R /config /chia-blockchain
 
