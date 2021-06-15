@@ -9,7 +9,7 @@ NODE_ONLY=${NODE_ONLY:-false}
 
 # checkout latest release version
 git -C /app/chia-blockchain fetch
-git -C /app/chia-blockchain checkout latest
+git -C /app/chia-blockchain checkout main
 
 # update chia-blockchain
 chown root:root -R /config /app/chia-blockchain
