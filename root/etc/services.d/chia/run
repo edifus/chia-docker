@@ -9,29 +9,29 @@ NODE_ONLY=${NODE_ONLY:-false}
 # shutdown trap
 _term() {
   echo "Caught SIGTERM signal!"
-  s6-setuidgid abc /chia-blockchain/venv/bin/chia stop -d all 2>/dev/null
+  s6-setuidgid abc /app/chia-blockchain/venv/bin/chia stop -d all 2>/dev/null
 }
 trap _term SIGTERM
 
 # activate chia-blockchain venv
-cd /chia-blockchain ; . ./activate
+cd /app/chia-blockchain ; . ./activate
 
 # run chia daemons
 if [[ ${FULL_NODE} == 'true' ]]
 then
   # start full-node
-  s6-setuidgid abc /chia-blockchain/venv/bin/chia start farmer
+  s6-setuidgid abc /app/chia-blockchain/venv/bin/chia start farmer
 elif [[ ${HARVESTER_ONLY} == 'true' || ${NODE_ONLY} == 'true' ]]
 then
   # start harvester
   if [[ ${HARVESTER_ONLY} == 'true' ]]
   then
-    s6-setuidgid abc /chia-blockchain/venv/bin/chia start harvester
+    s6-setuidgid abc /app/chia-blockchain/venv/bin/chia start harvester
   fi
   # start node-only
   if [[ ${NODE_ONLY} == 'true' ]]
   then
-    s6-setuidgid abc /chia-blockchain/venv/bin/chia start node
+    s6-setuidgid abc /app/chia-blockchain/venv/bin/chia start node
   fi
 fi
 
