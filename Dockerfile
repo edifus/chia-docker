@@ -4,7 +4,7 @@ FROM ghcr.io/linuxserver/baseimage-ubuntu:focal
 LABEL maintainer="edifus"
 
 # environment variables
-ARG DEBIAN_FRONTEND="noninteractive"
+ENV DEBIAN_FRONTEND="noninteractive"
 ENV HOME="/config"
 
 # install chia-blockchain
@@ -28,13 +28,13 @@ RUN apt-get update \
       python3.8-venv \
       python3.8-distutils \
     && echo "**** cloning latest chia-blockchain ****" \
-    && git clone https://github.com/felixbrucker/chia-blockchain.git --branch latest --recurse-submodules="mozilla-ca" \
-    && cd /chia-blockchain \
-    && git fetch \
-    && git checkout latest \
+    && git clone https://github.com/felixbrucker/chia-blockchain.git --branch latest --recurse-submodules="mozilla-ca" /app/chia-blockchain \
+    && git -C /app/chia-blockchain fetch \
+    && git -C /app/chia-blockchain checkout latest \
+    && cd /app/chia-blockchain \
     && /bin/sh ./install.sh \
     && mkdir /plots \
-    && chown abc:abc -R /plots /config /chia-blockchain \
+    && chown abc:abc -R /plots /config /app/chia-blockchain \
     && echo "**** cleanup ****" \
     && apt-get clean \
     && rm -rf \
