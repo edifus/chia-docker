@@ -13,7 +13,7 @@ git -C /app/chia-blockchain checkout latest
 
 # update chia-blockchain
 chown root:root -R /config /app/chia-blockchain
-cd /chia-blockchain
+cd /app/chia-blockchain
 /bin/sh install.sh
 chown abc:abc -R /config /app/chia-blockchain
 
