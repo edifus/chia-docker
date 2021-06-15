@@ -8,10 +8,8 @@ HARVESTER_ONLY=${HARVESTER_ONLY:-false}
 NODE_ONLY=${NODE_ONLY:-false}
 
 # checkout latest release version
-CHIA_RELEASE=$(curl -sX GET "https://api.github.com/repos/felixbrucker/chia-blockchain/releases/latest" \
-  | awk '/tag_name/{print $4;exit}' FS='[""]')
 git -C /chia-blockchain fetch
-git -C /chia-blockchain checkout ${CHIA_RELEASE}
+git -C /chia-blockchain checkout latest
 
 # update chia-blockchain
 chown root:root -R /config /chia-blockchain
