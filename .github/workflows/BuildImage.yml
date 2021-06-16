@@ -3,16 +3,16 @@ name: Build Image
 on:
   push:
     branches:
-      - main
+      - foxypool
   pull_request:
     branches:
-      - main
+      - foxypool
   workflow_dispatch:
 
 env:
   ENDPOINT: "edifus/chia"
-  BRANCH: "main"
-  IMAGE: "latest"
+  BRANCH: "foxypool"
+  IMAGE: "foxypool"
 
 jobs:
   build:
@@ -25,20 +25,15 @@ jobs:
           docker build --no-cache -t ${{ github.sha }} .
       - name: Tag image
         run: |
-          docker tag ${{ github.sha }} ${ENDPOINT}:${IMAGE}
-          docker tag ${{ github.sha }} ${ENDPOINT}:${{ github.sha }}
           docker tag ${{ github.sha }} ghcr.io/${ENDPOINT}:${IMAGE}
           docker tag ${{ github.sha }} ghcr.io/${ENDPOINT}:${{ github.sha }}
       - name: Credential check
         run: |
           echo "CR_USER=${{ secrets.CR_USER }}" >> $GITHUB_ENV
           echo "CR_PAT=${{ secrets.CR_PAT }}" >> $GITHUB_ENV
-          echo "DOCKERUSER=${{ secrets.DOCKERUSER }}" >> $GITHUB_ENV
-          echo "DOCKERPASS=${{ secrets.DOCKERPASS }}" >> $GITHUB_ENV
-          if [[ "${{ secrets.CR_USER }}" == "" && "${{ secrets.CR_PAT }}" == "" && "${{ secrets.DOCKERUSER }}" == "" && "${{ secrets.DOCKERPASS }}" == "" ]]; then
+          if [[ "${{ secrets.CR_USER }}" == "" && "${{ secrets.CR_PAT }}" == "" ]]; then
             echo "::error::Push credential secrets missing."
-            echo "::error::You must set either CR_USER & CR_PAT or DOCKERUSER & DOCKERPASS as secrets in your repo settings."
-            echo "::error::See https://github.com/linuxserver/docker-mods/blob/master/README.md for more information/instructions."
+            echo "::error::You must set either CR_USER & CR_PAT as secrets in your repo settings."
             exit 1
           fi
       - name: Login to GitHub Container Registry
@@ -49,11 +44,3 @@ jobs:
         if: ${{ env.CR_USER && env.CR_PAT }}
         run: |
           docker push ghcr.io/${ENDPOINT}:${IMAGE}
- #     - name: Login to DockerHub
- #       if: ${{ env.DOCKERUSER && env.DOCKERPASS }}
- #       run: |
- #         echo ${{ secrets.DOCKERPASS }} | docker login -u ${{ secrets.DOCKERUSER }} --password-stdin
- #     - name: Push tags to DockerHub
- #       if: ${{ env.DOCKERUSER && env.DOCKERPASS }}
- #       run: |
- #         docker push ${ENDPOINT}:${IMAGE}
