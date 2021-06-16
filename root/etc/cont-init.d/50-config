@@ -9,11 +9,11 @@ NODE_ONLY=${NODE_ONLY:-false}
 
 # checkout latest release version
 git -C /app/chia-blockchain fetch
-git -C /app/chia-blockchain checkout latest
+git -C /app/chia-blockchain checkout main
 
 # update chia-blockchain
 chown root:root -R /config /app/chia-blockchain
-cd /chia-blockchain
+cd /app/chia-blockchain
 /bin/sh install.sh
 chown abc:abc -R /config /app/chia-blockchain
 
@@ -68,7 +68,7 @@ sed -i 's|localhost|127.0.0.1|g' /config/.chia/mainnet/config/config.yaml
 
 # configure chia daemon
 echo "**** setting log level: ${LOG_LEVEL} ****"
-s6-setuidgid abc /app/hia-blockchain/venv/bin/chia configure --set-log-level ${LOG_LEVEL}
+s6-setuidgid abc /app/chia-blockchain/venv/bin/chia configure --set-log-level ${LOG_LEVEL}
 echo "**** setting upnp enabled: ${UPNP} "
 s6-setuidgid abc /app/chia-blockchain/venv/bin/chia configure --upnp ${UPNP}
 
@@ -102,4 +102,4 @@ deactivate
 
 # set proper user permissions
 chown abc:abc -R \
-  /config /chia-blockchain
+  /config /app/chia-blockchain

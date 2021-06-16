@@ -30,7 +30,7 @@ RUN apt-get update \
     && echo "**** cloning latest chia-blockchain ****" \
     && git clone https://github.com/felixbrucker/chia-blockchain.git --branch latest --recurse-submodules="mozilla-ca" /app/chia-blockchain \
     && git -C /app/chia-blockchain fetch \
-    && git -C /app/chia-blockchain checkout latest \
+    && git -C /app/chia-blockchain checkout main \
     && cd /app/chia-blockchain \
     && /bin/sh ./install.sh \
     && mkdir /plots \
