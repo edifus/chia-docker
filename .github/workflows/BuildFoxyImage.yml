@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - foxypool
-  pull_request:
-    branches:
-      - foxypool
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * 1"
