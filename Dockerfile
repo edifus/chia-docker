@@ -28,7 +28,7 @@ RUN apt-get update \
       python3.8-venv \
       python3.8-distutils \
     && echo "**** cloning latest chia-blockchain ****" \
-    && git clone https://github.com/felixbrucker/chia-blockchain.git --branch latest --recurse-submodules="mozilla-ca" /app/chia-blockchain \
+    && git clone https://github.com/foxypool/chia-blockchain.git --branch latest --recurse-submodules="mozilla-ca" /app/chia-blockchain \
     && git -C /app/chia-blockchain fetch \
     && git -C /app/chia-blockchain checkout main \
     && cd /app/chia-blockchain \
