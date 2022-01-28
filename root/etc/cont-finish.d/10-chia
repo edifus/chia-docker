@@ -1,0 +1,10 @@
+#!/usr/bin/with-contenv bash
+
+checkChiaNode() {
+  ps aux | grep chia_daemo[n] > /dev/null
+  return $?
+}
+
+if [checkChiaNode]; then
+  s6-setuidgid abc /app/chia-blockchain/venv/bin/chia stop all -d
+fi

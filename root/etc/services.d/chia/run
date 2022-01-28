@@ -9,9 +9,10 @@ NODE_ONLY=${NODE_ONLY:-false}
 # shutdown trap
 _term() {
   echo "Caught SIGTERM signal!"
-  s6-setuidgid abc /app/chia-blockchain/venv/bin/chia stop -d all 2>/dev/null
+  s6-setuidgid abc /app/chia-blockchain/venv/bin/chia stop all -d
+  exit 0
 }
-trap _term SIGTERM
+trap _term SIGINT SIGTERM
 
 # activate chia-blockchain venv
 cd /app/chia-blockchain ; . ./activate
