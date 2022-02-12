@@ -21,7 +21,7 @@ Compatible with docker-compose v2 schemas.
 ---
 version: "2.1"
 services:
-  rutorrent:
+  chia:
     image: ghcr.io/edifus/chia
     container_name: chia
     environment:
