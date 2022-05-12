@@ -7,6 +7,9 @@ FULL_NODE=${FULL_NODE:-true}
 HARVESTER_ONLY=${HARVESTER_ONLY:-false}
 NODE_ONLY=${NODE_ONLY:-false}
 
+# git fix
+git config --global --add safe.directory /app/chia-blockchain
+
 # checkout latest release version
 CHIA_RELEASE=$(curl -sX GET "https://api.github.com/repos/Chia-Network/chia-blockchain/releases/latest" \
   | awk '/tag_name/{print $4;exit}' FS='[""]')
