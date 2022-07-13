@@ -193,3 +193,4 @@ docker build  --no-cache --pull -t edifus/chia:test .
 ## Versions
 
 * **2021.05.16:** - Inital version, based on linuxserver.io ubuntu base and official chia-docker container
+
